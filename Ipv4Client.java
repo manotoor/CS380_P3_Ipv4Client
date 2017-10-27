@@ -15,13 +15,15 @@ public class Ipv4Client{
 			BufferedReader br = new BufferedReader(isr);
 
 			//get the dest address of server
+			byte[] destAddress = socket.getInetAddress().getAddress();
 			//Personal IP address (can use local host)
+			byte[] srcAddress = {127,0,0,1};
 
 
 			// Initializing variables for array
 			//IPv4 always uses version 4
 			int version = 4;
-			//Minimum Value for this field is 5( can be variable in size but 5 * 32 bits = 160 bits or 20 bytes)
+			//Minimum Value for this field is 5( can be variable in size but 5lines * 32 bits = 160 bits or 20 bytes)
 			byte hlen = 5;
 			//Start at 2 increment by x2 each time
 			int dataLength = 2;
@@ -32,6 +34,7 @@ public class Ipv4Client{
 
 			for(int i =0; i < 12;i++){
 				//version = 4
+				packet[0] = (byte)version;
 				//hlen = 5 minimum
 				//TOS(Do not Implement)
 				//Length

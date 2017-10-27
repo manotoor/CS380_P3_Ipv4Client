@@ -5,6 +5,9 @@ import java.net.Socket;
 import java.io.BufferedReader;
 
 /***********************************************************************************************
+
+	Authors: 	Mano Toor
+				Andrew Trang
 	
 		IPV4 Packet  *************FROM WIKIPEDIA*************
 		0		4		8		12	14	16		20		24		28		32

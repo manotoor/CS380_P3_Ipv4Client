@@ -140,8 +140,6 @@ public class Ipv4Client{
 			//Personal IP address (can use local host)
 			byte[] srcAddress = {127,0,0,1};
 
-
-			// Initializing variables for array
 			//IPv4 always uses version 4
 			int version = 4;
 			//Minimum Value for this field is 5( can be variable in size but 5lines * 32 bits = 160 bits or 20 bytes)
@@ -156,23 +154,73 @@ public class Ipv4Client{
 			for(int i =0; i < 12;i++){
 				//Total length without data is 20 bytes, but we add data length of 2 bytes so total for i = 0 is 22 bytes
 				int totalLength = length + dataLength;
-				packet = new byte[totalLength]
-				//version = 4
-				packet[0] = (byte)version;
-				//hlen = 5 minimum
-				packet[1] = (byte)
+				packet = new byte[totalLength];
+
+				//version = 4  + hlen = 5 minimum
+				//Here we are Oring two 4 bits together to make 1 byte
+				packet[0] = (byte)((version << 4 & 0xFF) + (hlen & 0xFF));
+
 				//TOS(Do not Implement)
-				//Length
+				packet[1] = 0;
+
+				//Length split total length into two bytes to send
+				byte lUpper = (byte)(totalLength >>> 8);
+				byte lLower = (byte)(totalLength);
+				packet[2] = lUpper;
+				packet[3] = lLower;
+
 				//Ident(Do not Implement)
-				//Flags(Implement assuming no fragmentation)
+				packet[4] = 0;
+				packet[5] = 0;
+
+				//Flags(Implement assuming no fragmentation) - 010 = 0100 0000 = 0x40
+				packet[6] = 0x40;
+
 				//Offset(Do not Implement)
+				packet[7] = 0;
+
 				//TTL(Implement assuming every packet has a TTL of 50)
-				//Protocol(Implement assuming TCP for all packets)
-				//Checksum
+				packet[8] = 50;
+
+				//Protocol(Implement assuming TCP for all packets) TCP = 6
+				packet[9] = 6;
+
 				//Source Address(Implement with an IP address of your choice)
-				//Destination Address( Implement using the IP address of the server )
+				for (int j = 0; j < srcAddress.length; j++) {
+					// 12 to 15
+					packet[12 + j] = srcAddress[j];
+				}
+
+				//Destination address
+				for (int k = 0; k < destAddress.length; k++) {
+					// 16 to 19
+					packet[16 + k] = destAddress[k];
+				}		
+
+				//CheckSum
+				short checkSum = checksum(packet);
+				int checkSumUpper = checkSum >> 8 & 0xFF;
+				int checkSumLower = checkSum & 0xFF;
+				packet[10] = (byte)checkSumUpper;
+				packet[11] = (byte)checkSumLower;
 				//Options/Pad(Ignore (do not put in header)
 				//Data(Implement using zeros or random data)
+				for (int d = 20; d < packet.length; d++) {
+					// 20 to end of array
+					packet[d] = 0;
+				}
+
+				// Send to packet server
+				os.write(packet);
+				
+				System.out.println("data length: " + dataLength);
+
+				// Server response
+				String response = br.readLine();
+				System.out.println(response + "\n");
+				
+				// Change data length (start at 2 bytes, double each send)
+				dataLength = dataLength * 2;
 			}
 		}catch(Exception e){
 			System.out.println("Uh oh! Looks like something went wrong!");
